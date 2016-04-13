@@ -1,8 +1,10 @@
+# [WIP] NOT PRODUCTION READY YET
+
 # sigh-stylus
 
 [![build status](https://circleci.com/gh/Strate/sigh-stylus.png)](https://circleci.com/gh/Strate/sigh-stylus)
 
-Sigh plugin for...
+Sigh plugin for Stylus
 
 ## Example
 
