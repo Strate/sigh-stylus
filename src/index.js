@@ -11,6 +11,8 @@ function stylusTask(opts) {
   var log = require('sigh-core').log;
   var stylus = require("stylus");
   var Promise = require("bluebird");
+  var fs = require("fs");
+  var {resolve: path_resolve} = require("path")
 
   // this task runs inside the subprocess to transform each event
   return event => {
@@ -34,12 +36,13 @@ function stylusTask(opts) {
       }
       styl.render(function(err, css) {
         if (err) {
-          console.log(err, err.trace, event.path)
           reject(err)
         } else {
+          delete styl.sourcemap.sourceRoot
+          styl.sourcemap.sourcesContent = styl.sourcemap.sources.map(fname => fs.readFileSync(path_resolve(fname), "utf8"))
           resolve({
             data: css,
-            sourceMap: styl.sourcemap
+            map: styl.sourcemap
           })
         }
       })
@@ -55,11 +58,12 @@ function adaptEvent(compiler) {
 
     if (event.fileType !== 'styl') return event
 
-    return compiler(_.pick(event, 'type', 'data', 'path', 'projectPath')).then(result => {
-      event.data = result.data;
+    return compiler(_.pick(event, 'type', 'data', 'path', 'projectPath', 'sourcePath')).then(({data, map}) => {
+      event.data = data;
 
-      if (result.sourceMap)
-        event.applySourceMap(result.sourceMap);
+      if (map) {
+        event.applySourceMap(map);
+      }
 
       event.changeFileSuffix('css')
       return event
